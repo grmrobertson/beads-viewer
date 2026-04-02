@@ -15,8 +15,11 @@ const wss = new WebSocketServer({ server });
 app.use(cors());
 app.use(express.json());
 
-// JSONL path
-const JSONL_PATH = join(process.cwd(), '.beads', 'issues.jsonl');
+// Watch path - prefer issues.jsonl, fall back to interactions.jsonl (dolt-based beads)
+import { existsSync } from 'fs';
+const JSONL_PATH = existsSync(join(process.cwd(), '.beads', 'issues.jsonl'))
+  ? join(process.cwd(), '.beads', 'issues.jsonl')
+  : join(process.cwd(), '.beads', 'interactions.jsonl');
 
 // Helper: Broadcast to all WebSocket clients
 function broadcast(message: any) {

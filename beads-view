@@ -1,0 +1,34 @@
+#!/bin/zsh
+# beads-view - Launch beads-viewer pointed at any project directory
+
+BEADS_VIEWER_DIR="/Users/graeme/repos.nosync/beads-viewer"
+TARGET_DIR="${1:-.}"
+TARGET_DIR="$(cd "$TARGET_DIR" 2>/dev/null && pwd)" || { echo "❌ Directory not found: $1"; exit 1; }
+
+if [[ ! -d "$TARGET_DIR/.beads" ]]; then
+  echo "⚠️  No .beads directory found in $TARGET_DIR"
+  echo "Run 'bd init' in that directory first."
+  exit 1
+fi
+
+echo "🔮 Beads Viewer → $TARGET_DIR"
+
+cleanup() {
+  kill $SERVER_PID $FRONTEND_PID 2>/dev/null
+  exit
+}
+trap cleanup INT TERM
+
+# Server runs with target project as cwd (so bd CLI + file watcher find .beads/)
+(cd "$TARGET_DIR" && bun --watch "$BEADS_VIEWER_DIR/server/index.ts") &
+SERVER_PID=$!
+
+# Frontend runs from beads-viewer dir (needs vite config, node_modules, etc.)
+(cd "$BEADS_VIEWER_DIR" && bun run dev) &
+FRONTEND_PID=$!
+
+echo "🖥  Server: http://localhost:3001  (PID $SERVER_PID)"
+echo "🌐 Frontend: http://localhost:5173  (PID $FRONTEND_PID)"
+echo "Press Ctrl+C to stop"
+
+wait

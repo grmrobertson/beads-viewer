@@ -99,7 +99,9 @@ export async function listIssues(): Promise<BdIssue[]> {
  * Get a single issue by ID
  */
 export async function getIssue(id: string): Promise<BdIssue> {
-  return await execBd(['show', id]);
+  const result = await execBd(['show', id]);
+  // bd show returns an array in newer versions
+  return Array.isArray(result) ? result[0] : result;
 }
 
 /**

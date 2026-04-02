@@ -155,7 +155,12 @@ export function KanbanBoard() {
     }
 
     issues.forEach(issue => {
-      groups[issue.status].push(issue)
+      if (groups[issue.status]) {
+        groups[issue.status].push(issue)
+      } else {
+        // Unknown statuses (e.g. deferred) go into open column
+        groups.open.push(issue)
+      }
     })
 
     return groups
